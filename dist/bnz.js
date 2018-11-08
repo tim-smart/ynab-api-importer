@@ -45,7 +45,7 @@ async function closeAccount(page) {
 }
 exports.closeAccount = closeAccount;
 async function exportAccount(page, accountName, fromDate = moment_1.default()
-    .subtract(7, "days")
+    .subtract(3, "days")
     .format("YYYY-MM-DD"), toDate = moment_1.default().format("YYYY-MM-DD")) {
     const accountID = await getAccountID(page, accountName);
     const exportURL = `https://www.bnz.co.nz/ib/api/accounts/${accountID}/` +

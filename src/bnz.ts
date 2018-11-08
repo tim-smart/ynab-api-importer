@@ -66,7 +66,7 @@ export async function exportAccount(
   page: puppeteer.Page,
   accountName: string,
   fromDate: string = moment()
-    .subtract(7, "days")
+    .subtract(3, "days")
     .format("YYYY-MM-DD"),
   toDate: string = moment().format("YYYY-MM-DD")
 ): Promise<string | null> {
