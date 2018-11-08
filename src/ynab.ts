@@ -1,6 +1,6 @@
 import parentLogger from "./logger";
 import { API, SaveTransaction } from "ynab";
-import { ITransaction, parse } from "ofx-js";
+import { ITransaction, parse, TTransactionList } from "ofx-js";
 import { stringify } from "querystring";
 import moment = require("moment");
 
@@ -23,7 +23,19 @@ export class YnabWrapperClient {
       return `${prefix}:${counters[prefix]}`;
     }
 
-    return res.OFX.BANKMSGSRSV1.STMTTRNRS.STMTRS.BANKTRANLIST.STMTTRN.map(
+    const statementWrapper = res.OFX.BANKMSGSRSV1 || res.OFX.CREDITCARDMSGSRSV1;
+    let transactionList: TTransactionList;
+    if (res.OFX.BANKMSGSRSV1) {
+      transactionList =
+        res.OFX.BANKMSGSRSV1.STMTTRNRS.STMTRS.BANKTRANLIST.STMTTRN;
+    } else if (res.OFX.CREDITCARDMSGSRSV1) {
+      transactionList =
+        res.OFX.CREDITCARDMSGSRSV1.CCSTMTTRNRS.CCSTMTRS.BANKTRANLIST.STMTTRN;
+    } else {
+      return [];
+    }
+
+    return transactionList.map(
       (trans): SaveTransaction => {
         const amount = +(trans.TRNAMT.replace(".", "") + "0");
         const date = moment(trans.DTPOSTED, "YYYYMMDD").format("YYYY-MM-DD");

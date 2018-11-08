@@ -13,7 +13,6 @@ async function login(page, accessNumber, password) {
     await page.type('input[name="principal"]', accessNumber);
     await page.type('input[name="credentials"]', password);
     await page.keyboard.press("Enter");
-    await page.screenshot({ path: "login.png" });
     await page.waitForSelector("span.js-main-menu-button-text");
 }
 exports.login = login;

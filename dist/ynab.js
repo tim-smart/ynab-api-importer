@@ -22,7 +22,20 @@ class YnabWrapperClient {
             }
             return `${prefix}:${counters[prefix]}`;
         }
-        return res.OFX.BANKMSGSRSV1.STMTTRNRS.STMTRS.BANKTRANLIST.STMTTRN.map((trans) => {
+        const statementWrapper = res.OFX.BANKMSGSRSV1 || res.OFX.CREDITCARDMSGSRSV1;
+        let transactionList;
+        if (res.OFX.BANKMSGSRSV1) {
+            transactionList =
+                res.OFX.BANKMSGSRSV1.STMTTRNRS.STMTRS.BANKTRANLIST.STMTTRN;
+        }
+        else if (res.OFX.CREDITCARDMSGSRSV1) {
+            transactionList =
+                res.OFX.CREDITCARDMSGSRSV1.CCSTMTTRNRS.CCSTMTRS.BANKTRANLIST.STMTTRN;
+        }
+        else {
+            return [];
+        }
+        return transactionList.map((trans) => {
             const amount = +(trans.TRNAMT.replace(".", "") + "0");
             const date = moment(trans.DTPOSTED, "YYYYMMDD").format("YYYY-MM-DD");
             return {
