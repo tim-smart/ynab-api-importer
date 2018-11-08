@@ -1,0 +1,11 @@
+{
+  "ynabAccessToken": "",
+  "ynabBudgetID": "ynab-budget-id-here",
+
+  "bnzAccessNumber": "",
+  "bnzPassword": "",
+
+  "accounts": {
+    "Checking": "ynab-account-id-here"
+  }
+}

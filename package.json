@@ -1,0 +1,33 @@
+{
+  "name": "bnz-ynab-sync",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "rm -rf dist && tsc -p .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "bnz",
+    "ynab",
+    "sync"
+  ],
+  "author": "Tim Smart <tim@fostle.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^10.12.3",
+    "@types/pino": "^5.8.1",
+    "@types/puppeteer": "^1.9.1",
+    "prettier": "^1.15.1",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.15.0",
+    "typescript": "^3.1.6"
+  },
+  "dependencies": {
+    "moment": "^2.22.2",
+    "ofx-js": "^0.1.1",
+    "pino": "^5.8.1",
+    "puppeteer": "^1.10.0",
+    "ynab": "^1.9.0"
+  }
+}
