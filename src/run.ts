@@ -1,8 +1,8 @@
-import config from "../config.json";
 import logger from "./logger.js";
 import puppeteer from "puppeteer";
 import { exportAccount, login } from "./bnz";
 import { YnabWrapperClient } from "./ynab.js";
+const config: any = require("../config");
 
 async function main() {
   // tslint:disable no-console

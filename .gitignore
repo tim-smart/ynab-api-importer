@@ -1,4 +1,4 @@
 .vscode/
 node_modules/
-config.json
+config.js
 .DS_Store

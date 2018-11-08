@@ -68,6 +68,9 @@ export class YnabWrapperClient {
 
     logger.debug(`Importing ${transactions.length} transactions`);
 
+    if (!transactions.length) {
+      return;
+    }
     const res = await this.client.transactions.createTransactions(
       this.budgetID,
       {
