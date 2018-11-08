@@ -55,6 +55,9 @@ class YnabWrapperClient {
     async importOFX(accountID, input) {
         const transactions = await YnabWrapperClient.ofxToTransactions(accountID, input);
         logger.debug(`Importing ${transactions.length} transactions`);
+        if (!transactions.length) {
+            return;
+        }
         const res = await this.client.transactions.createTransactions(this.budgetID, {
             transactions
         });
