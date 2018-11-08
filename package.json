@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "rm -rf dist && tsc -p .",
+    "start": "node dist/run.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
