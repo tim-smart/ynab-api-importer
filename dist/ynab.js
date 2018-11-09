@@ -12,7 +12,7 @@ class YnabWrapperClient {
     static async ofxToTransactions(accountID, input) {
         const res = await ofx_js_1.parse(input);
         const counters = {};
-        function getImportID(trans, date, amount) {
+        function getImportID(date, amount) {
             const prefix = `YNAB:${amount}:${date}`;
             if (!counters[prefix]) {
                 counters[prefix] = 1;
@@ -22,7 +22,6 @@ class YnabWrapperClient {
             }
             return `${prefix}:${counters[prefix]}`;
         }
-        const statementWrapper = res.OFX.BANKMSGSRSV1 || res.OFX.CREDITCARDMSGSRSV1;
         let transactionList;
         if (res.OFX.BANKMSGSRSV1) {
             transactionList =
@@ -42,7 +41,7 @@ class YnabWrapperClient {
                 account_id: accountID,
                 amount,
                 date,
-                import_id: getImportID(trans, date, amount),
+                import_id: getImportID(date, amount),
                 memo: trans.MEMO,
                 payee_name: trans.NAME
             };

@@ -1,7 +1,6 @@
 import parentLogger from "./logger";
 import { API, SaveTransaction } from "ynab";
-import { ITransaction, parse, TTransactionList } from "ofx-js";
-import { stringify } from "querystring";
+import { parse, TTransactionList } from "ofx-js";
 import moment = require("moment");
 
 const logger = parentLogger.child({ module: "ynab" });
@@ -11,7 +10,7 @@ export class YnabWrapperClient {
     const res = await parse(input);
     const counters: { [index: string]: number } = {};
 
-    function getImportID(trans: ITransaction, date: string, amount: number) {
+    function getImportID(date: string, amount: number) {
       const prefix = `YNAB:${amount}:${date}`;
 
       if (!counters[prefix]) {
@@ -23,7 +22,6 @@ export class YnabWrapperClient {
       return `${prefix}:${counters[prefix]}`;
     }
 
-    const statementWrapper = res.OFX.BANKMSGSRSV1 || res.OFX.CREDITCARDMSGSRSV1;
     let transactionList: TTransactionList;
     if (res.OFX.BANKMSGSRSV1) {
       transactionList =
@@ -44,7 +42,7 @@ export class YnabWrapperClient {
           account_id: accountID,
           amount,
           date,
-          import_id: getImportID(trans, date, amount),
+          import_id: getImportID(date, amount),
           memo: trans.MEMO,
           payee_name: trans.NAME
         };
