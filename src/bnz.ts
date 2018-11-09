@@ -1,88 +1,96 @@
 import moment from "moment";
-import puppeteer, { ElementHandle } from "puppeteer";
+import { Browser, Page } from "puppeteer";
+// tslint:disable max-classes-per-file
 
-export async function login(
-  page: puppeteer.Page,
-  accessNumber: string,
-  password: string
-) {
-  await page.setViewport({
-    height: 900,
-    width: 1440
-  });
+export class BnzClient {
+  public browser: Browser;
+  public page?: Page;
 
-  await page.goto("https://secure.bnz.co.nz/auth/personal-login");
-  await page.type('input[name="principal"]', accessNumber);
-  await page.type('input[name="credentials"]', password);
-  await page.keyboard.press("Enter");
-  await page.waitForSelector("span.js-main-menu-button-text");
+  public accessNumber: string;
+  public password: string;
+
+  constructor(opts: {
+    browser: Browser;
+    accessNumber: string;
+    password: string;
+  }) {
+    this.browser = opts.browser;
+    this.accessNumber = opts.accessNumber;
+    this.password = opts.password;
+  }
+
+  public async login() {
+    if (this.page) {
+      await this.page.close();
+    }
+    this.page = await this.browser.newPage();
+    await this.page.goto("https://secure.bnz.co.nz/auth/personal-login");
+    await this.page.type('input[name="principal"]', this.accessNumber);
+    await this.page.type('input[name="credentials"]', this.password);
+    await this.page.keyboard.press("Enter");
+    await this.page.waitForSelector("span.js-main-menu-button-text");
+
+    return new BnzDashboardPage(this, this.page);
+  }
 }
 
-export async function getAccountButton(
-  page: puppeteer.Page,
-  accountName: string
-): Promise<ElementHandle | undefined> {
-  const accounts = await page.$x(
-    `//h3[@title='${accountName}']/ancestor::div[contains(@class, ' js-account ')]`
-  );
-  return accounts[0];
+class BnzPage {
+  public client: BnzClient;
+  public page: Page;
+
+  constructor(client: BnzClient, page: Page) {
+    this.client = client;
+    this.page = page;
+  }
 }
 
-export async function getAccountID(page: puppeteer.Page, accountName: string) {
-  const account = await getAccountButton(page, accountName);
-  if (account) {
-    const id: string = await page.evaluate(
-      (el: HTMLDivElement) => el.dataset.dragId,
-      account
+class BnzDashboardPage extends BnzPage {
+  public async getAccountButton(accountName: string) {
+    const accounts = await this.page.$x(
+      `//h3[@title='${accountName}']/ancestor::div[contains(@class, ' js-account ')]`
     );
-    return id;
+    return accounts[0];
   }
 
-  return null;
-}
+  public async getAccountID(accountName: string) {
+    const account = await this.getAccountButton(accountName);
+    if (account) {
+      const id: string = await this.page.evaluate(
+        (el: HTMLDivElement) => el.dataset.dragId,
+        account
+      );
+      return id;
+    }
 
-export async function openAccount(
-  page: puppeteer.Page,
-  accountName: string
-): Promise<boolean> {
-  const account = await getAccountButton(page, accountName);
-
-  if (account) {
-    await account.click();
-    return true;
+    return null;
   }
 
-  return false;
-}
+  public async exportAccount(
+    accountName: string,
+    fromDate: string = moment()
+      .subtract(4, "days")
+      .format("YYYY-MM-DD"),
+    toDate: string = moment()
+      .subtract(1, "day")
+      .format("YYYY-MM-DD")
+  ): Promise<string | null> {
+    const accountID = await this.getAccountID(accountName);
+    const exportURL =
+      `https://www.bnz.co.nz/ib/api/accounts/${accountID}/` +
+      `transactions/export/legacy?` +
+      `fromDate=${fromDate}&` +
+      `toDate=${toDate}&` +
+      `format=O`;
 
-export async function closeAccount(page: puppeteer.Page) {
-  await page.click("span.js-close-modal-button");
-}
+    const resp = (await this.page.evaluate(async url => {
+      const res = await fetch(url, {
+        credentials: "same-origin"
+      });
 
-export async function exportAccount(
-  page: puppeteer.Page,
-  accountName: string,
-  fromDate: string = moment()
-    .subtract(3, "days")
-    .format("YYYY-MM-DD"),
-  toDate: string = moment().format("YYYY-MM-DD")
-): Promise<string | null> {
-  const accountID = await getAccountID(page, accountName);
-  const exportURL =
-    `https://www.bnz.co.nz/ib/api/accounts/${accountID}/` +
-    `transactions/export/legacy?` +
-    `fromDate=${fromDate}&` +
-    `toDate=${toDate}&` +
-    `format=O`;
+      const body = await res.text();
+      return body;
+    }, exportURL)) as string;
 
-  const resp = (await page.evaluate(async url => {
-    const res = await fetch(url, {
-      credentials: "same-origin"
-    });
-
-    const body = await res.text();
-    return body;
-  }, exportURL)) as string;
-
-  return Buffer.from(JSON.parse(resp), "base64").toString();
+    return Buffer.from(JSON.parse(resp), "base64").toString();
+  }
 }

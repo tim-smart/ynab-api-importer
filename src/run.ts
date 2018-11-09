@@ -1,6 +1,6 @@
 import logger from "./logger.js";
 import puppeteer from "puppeteer";
-import { exportAccount, login } from "./bnz";
+import { BnzClient } from "./bnz.js";
 import { YnabWrapperClient } from "./ynab.js";
 const config: any = require("../config");
 
@@ -11,10 +11,14 @@ async function main() {
     config.ynabBudgetID
   );
   const browser = await puppeteer.launch();
-  const page = await browser.newPage();
+  const bnz = new BnzClient({
+    accessNumber: config.bnzAccessNumber,
+    browser,
+    password: config.bnzPassword
+  });
 
   logger.info("Logging into BNZ");
-  await login(page, config.bnzAccessNumber, config.bnzPassword);
+  const bnzDashboard = await bnz.login();
 
   await Promise.all(
     Object.keys(config.accounts)
@@ -22,7 +26,7 @@ async function main() {
       .map(async accountName => {
         logger.info(`Exporting ${accountName}`);
         const ynabAccountID = config.accounts[accountName] as string;
-        const ofx = await exportAccount(page, accountName);
+        const ofx = await bnzDashboard.exportAccount(accountName);
         if (!ofx) {
           return;
         }
