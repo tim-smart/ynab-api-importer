@@ -1,9 +1,7 @@
-import parentLogger from "./logger";
+import logger from "./logger";
 import { API, SaveTransaction } from "ynab";
 import { parse, TTransactionList } from "ofx-js";
 import moment = require("moment");
-
-const logger = parentLogger.child({ module: "ynab" });
 
 export class YnabWrapperClient {
   public static async ofxToTransactions(accountID: string, input: string) {

@@ -1,5 +1,9 @@
-import pino from "pino";
+export default {
+  info(...args: any[]) {
+    console.error("INFO", ...args);
+  },
 
-export default pino({
-  level: "debug"
-});
+  debug(...args: any[]) {
+    console.error("DEBUG", ...args);
+  }
+};

@@ -7,7 +7,6 @@ const logger_1 = __importDefault(require("./logger"));
 const ynab_1 = require("ynab");
 const ofx_js_1 = require("ofx-js");
 const moment = require("moment");
-const logger = logger_1.default.child({ module: "ynab" });
 class YnabWrapperClient {
     static async ofxToTransactions(accountID, input) {
         const res = await ofx_js_1.parse(input);
@@ -53,7 +52,7 @@ class YnabWrapperClient {
     }
     async importOFX(accountID, input) {
         const transactions = await YnabWrapperClient.ofxToTransactions(accountID, input);
-        logger.debug(`Importing ${transactions.length} transactions`);
+        logger_1.default.debug(`Importing ${transactions.length} transactions`);
         if (!transactions.length) {
             return;
         }

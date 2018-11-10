@@ -1,6 +1,6 @@
 {
   "name": "bnz-ynab-sync",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Import BNZ transactions into YNAB",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -28,7 +28,6 @@
   "dependencies": {
     "moment": "^2.22.2",
     "ofx-js": "^0.1.1",
-    "pino": "^5.8.1",
     "puppeteer": "^1.10.0",
     "ynab": "^1.9.0"
   }
