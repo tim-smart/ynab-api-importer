@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const moment_1 = __importDefault(require("moment"));
+const moment_timezone_1 = __importDefault(require("moment-timezone"));
 // tslint:disable max-classes-per-file
 class BnzClient {
     constructor(opts) {
@@ -44,9 +44,11 @@ class BnzDashboardPage extends BnzPage {
         }
         return null;
     }
-    async exportAccount(accountName, fromDate = moment_1.default()
+    async exportAccount(accountName, fromDate = moment_timezone_1.default()
+        .tz('Pacific/Auckland')
         .subtract(4, "days")
-        .format("YYYY-MM-DD"), toDate = moment_1.default()
+        .format("YYYY-MM-DD"), toDate = moment_timezone_1.default()
+        .tz('Pacific/Auckland')
         .subtract(1, "day")
         .format("YYYY-MM-DD")) {
         const accountID = await this.getAccountID(accountName);

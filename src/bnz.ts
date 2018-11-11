@@ -1,4 +1,4 @@
-import moment from "moment";
+import moment from "moment-timezone";
 import { Browser, Page } from "puppeteer";
 // tslint:disable max-classes-per-file
 
@@ -68,9 +68,11 @@ class BnzDashboardPage extends BnzPage {
   public async exportAccount(
     accountName: string,
     fromDate: string = moment()
+      .tz('Pacific/Auckland')
       .subtract(4, "days")
       .format("YYYY-MM-DD"),
     toDate: string = moment()
+      .tz('Pacific/Auckland')
       .subtract(1, "day")
       .format("YYYY-MM-DD")
   ): Promise<string | null> {
