@@ -1,44 +1,60 @@
 import logger from "./logger.js";
-import puppeteer from "puppeteer";
-import { BnzClient } from "./bnz.js";
+import { BnzAdapter } from "./banks/bnz.js";
 import { YnabWrapperClient } from "./ynab.js";
 
-export default async function bnzYnabImport(opts: {
+export const ADAPTERS: { [name: string]: IBankAdapter } = {};
+
+export interface IBankAdapter {
+  // Prepares the adapter for exporting the OFX feed
+  login(username: string, password: string): Promise<boolean>;
+  // Exports an account's OFX feed for the last 3 days, or returns null;
+  exportAccount(accountName: string): Promise<string | null>;
+  // Perform optional adapter clean up etc.
+  finish?(): Promise<void>;
+}
+
+export function registerAdapter(name: string, fn: () => IBankAdapter) {
+  ADAPTERS[name] = fn();
+}
+
+registerAdapter("bnz", () => new BnzAdapter());
+
+export default async function ynabAPIImporter(opts: {
   ynabAccessToken: string;
   ynabBudgetID: string;
-  bnzAccessNumber: string;
-  bnzPassword: string;
   accounts: { [accountName: string]: string };
+
+  adapter: string;
+  username: string;
+  password: string;
 }) {
   const ynab = new YnabWrapperClient(opts.ynabAccessToken, opts.ynabBudgetID);
-  const browser = await puppeteer.launch({
-    args: ["--no-sandbox"],
-    headless: true
-  });
-  const bnz = new BnzClient({
-    accessNumber: opts.bnzAccessNumber,
-    browser,
-    password: opts.bnzPassword
-  });
+  const adapter = ADAPTERS[opts.adapter];
+  if (!adapter) {
+    throw new Error(`Bank adapter '${opts.adapter} not registered.`);
+  }
 
-  logger.info("Logging into BNZ");
-  const bnzDashboard = await bnz.login();
+  logger.info(`Logging into bank '${opts.adapter}'`);
+  const loggedIn = await adapter.login(opts.username, opts.password);
+  if (!loggedIn) {
+    throw new Error(`Could not login to bank '${opts.adapter}.`);
+  }
 
   await Promise.all(
-    Object.keys(opts.accounts)
-      .filter(name => !!name)
-      .map(async accountName => {
-        logger.info(`Exporting ${accountName}`);
-        const ynabAccountID = opts.accounts[accountName] as string;
-        const ofx = await bnzDashboard.exportAccount(accountName);
-        if (!ofx) {
-          return;
-        }
+    Object.keys(opts.accounts).map(async accountName => {
+      logger.info(`Exporting ${accountName}`);
+      const ynabAccountID = opts.accounts[accountName] as string;
+      const ofx = await adapter.exportAccount(accountName);
+      if (!ofx) {
+        return;
+      }
 
-        logger.info(`Importing ${accountName}`);
-        await ynab.importOFX(ynabAccountID, ofx);
-      })
+      logger.info(`Importing ${accountName}`);
+      await ynab.importOFX(ynabAccountID, ofx);
+    })
   );
 
-  await browser.close();
+  if (adapter.finish) {
+    await adapter.finish();
+  }
 }

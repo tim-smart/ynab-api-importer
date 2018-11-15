@@ -7,8 +7,9 @@ const _1 = __importDefault(require("."));
 const config = require("../config");
 _1.default({
     accounts: config.accounts,
-    bnzAccessNumber: config.bnzAccessNumber,
-    bnzPassword: config.bnzPassword,
+    adapter: config.adapter,
+    password: config.password,
+    username: config.username,
     ynabAccessToken: config.ynabAccessToken,
     ynabBudgetID: config.ynabBudgetID
 }).catch(err => {

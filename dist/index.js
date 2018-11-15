@@ -4,35 +4,38 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const logger_js_1 = __importDefault(require("./logger.js"));
-const puppeteer_1 = __importDefault(require("puppeteer"));
-const bnz_js_1 = require("./bnz.js");
+const bnz_js_1 = require("./banks/bnz.js");
 const ynab_js_1 = require("./ynab.js");
-async function bnzYnabImport(opts) {
+exports.ADAPTERS = {};
+function registerAdapter(name, fn) {
+    exports.ADAPTERS[name] = fn();
+}
+exports.registerAdapter = registerAdapter;
+registerAdapter("bnz", () => new bnz_js_1.BnzAdapter());
+async function ynabAPIImporter(opts) {
     const ynab = new ynab_js_1.YnabWrapperClient(opts.ynabAccessToken, opts.ynabBudgetID);
-    const browser = await puppeteer_1.default.launch({
-        args: ["--no-sandbox"],
-        headless: true
-    });
-    const bnz = new bnz_js_1.BnzClient({
-        accessNumber: opts.bnzAccessNumber,
-        browser,
-        password: opts.bnzPassword
-    });
-    logger_js_1.default.info("Logging into BNZ");
-    const bnzDashboard = await bnz.login();
-    await Promise.all(Object.keys(opts.accounts)
-        .filter(name => !!name)
-        .map(async (accountName) => {
+    const adapter = exports.ADAPTERS[opts.adapter];
+    if (!adapter) {
+        throw new Error(`Bank adapter '${opts.adapter} not registered.`);
+    }
+    logger_js_1.default.info(`Logging into bank '${opts.adapter}'`);
+    const loggedIn = await adapter.login(opts.username, opts.password);
+    if (!loggedIn) {
+        throw new Error(`Could not login to bank '${opts.adapter}.`);
+    }
+    await Promise.all(Object.keys(opts.accounts).map(async (accountName) => {
         logger_js_1.default.info(`Exporting ${accountName}`);
         const ynabAccountID = opts.accounts[accountName];
-        const ofx = await bnzDashboard.exportAccount(accountName);
+        const ofx = await adapter.exportAccount(accountName);
         if (!ofx) {
             return;
         }
         logger_js_1.default.info(`Importing ${accountName}`);
         await ynab.importOFX(ynabAccountID, ofx);
     }));
-    await browser.close();
+    if (adapter.finish) {
+        await adapter.finish();
+    }
 }
-exports.default = bnzYnabImport;
+exports.default = ynabAPIImporter;
 //# sourceMappingURL=index.js.map

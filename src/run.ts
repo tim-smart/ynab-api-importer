@@ -1,11 +1,12 @@
-import bnzYnabImport from ".";
+import ynabAPIImporter from ".";
 
 const config: any = require("../config");
 
-bnzYnabImport({
+ynabAPIImporter({
   accounts: config.accounts,
-  bnzAccessNumber: config.bnzAccessNumber,
-  bnzPassword: config.bnzPassword,
+  adapter: config.adapter,
+  password: config.password,
+  username: config.username,
   ynabAccessToken: config.ynabAccessToken,
   ynabBudgetID: config.ynabBudgetID
 }).catch(err => {
