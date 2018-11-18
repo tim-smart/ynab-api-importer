@@ -17,20 +17,18 @@ Then run `npm install --production` and `npm start`.
 
 If you would like to create your own adapter, take a look at `src/banks/bnz.ts`.
 
-You need to implent the `IBankAdapter` interface and register it using
-`registerAdapter`.
+You need to implent the `IBankAdapter` interface and make it the default export.
+Users can then register it using the `registerAdapters` config option (see `config.example.js`).
 
 In your `peerDependencies` include `ynab-api-importer`;
 
 For example:
 
 ```typescript
-import { IBankAdapter, registerAdapter } from "ynab-api-importer";
+import { IBankAdapter } from "ynab-api-importer";
 import { SaveTransaction } from "ynab";
 
-registerAdapter("fancy-bank", () => new FancyBankAdapter());
-
-class FancyBankAdapter implements IBankAdapter {
+export default class FancyBankAdapter implements IBankAdapter {
   public async login(username: string, password: string): boolean {
     // Add your implmentation here
     return true;

@@ -17,7 +17,7 @@ export interface IBankAdapter {
 }
 
 // Function to register new adapters
-export function registerAdapter(name: string, fn: () => IBankAdapter) {
+function registerAdapter(name: string, fn: () => IBankAdapter) {
   ADAPTERS[name] = fn();
 }
 
