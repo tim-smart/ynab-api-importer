@@ -3,6 +3,8 @@ import ynabAPIImporter from ".";
 const config: any = require("../config");
 
 ynabAPIImporter({
+  registerAdapters: config.registerAdapters,
+
   accounts: config.accounts,
   adapter: config.adapter,
   password: config.password,

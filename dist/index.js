@@ -4,16 +4,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const logger_js_1 = __importDefault(require("./logger.js"));
-const bnz_js_1 = require("./banks/bnz.js");
-const ynab_js_1 = require("./ynab.js");
+const ynab_1 = require("ynab");
+const bnz_1 = require("./banks/bnz");
 exports.ADAPTERS = {};
+// Function to register new adapters
 function registerAdapter(name, fn) {
     exports.ADAPTERS[name] = fn();
 }
 exports.registerAdapter = registerAdapter;
-registerAdapter("bnz", () => new bnz_js_1.BnzAdapter());
+// Internal adapters
+registerAdapter("bnz", () => new bnz_1.BnzAdapter());
 async function ynabAPIImporter(opts) {
-    const ynab = new ynab_js_1.YnabWrapperClient(opts.ynabAccessToken, opts.ynabBudgetID);
+    if (opts.registerAdapters) {
+        Object.keys(opts.registerAdapters).forEach(name => {
+            registerAdapter(name, require(opts.registerAdapters[name]));
+        });
+    }
+    const ynab = new ynab_1.API(opts.ynabAccessToken);
     const adapter = exports.ADAPTERS[opts.adapter];
     if (!adapter) {
         throw new Error(`Bank adapter '${opts.adapter} not registered.`);
@@ -26,12 +33,14 @@ async function ynabAPIImporter(opts) {
     await Promise.all(Object.keys(opts.accounts).map(async (accountName) => {
         logger_js_1.default.info(`Exporting ${accountName}`);
         const ynabAccountID = opts.accounts[accountName];
-        const ofx = await adapter.exportAccount(accountName);
-        if (!ofx) {
+        const transactions = await adapter.exportAccount(accountName, ynabAccountID);
+        if (!transactions.length) {
             return;
         }
-        logger_js_1.default.info(`Importing ${accountName}`);
-        await ynab.importOFX(ynabAccountID, ofx);
+        logger_js_1.default.info(`Importing ${accountName} (${transactions.length})`);
+        await ynab.transactions.createTransactions(opts.ynabBudgetID, {
+            transactions
+        });
     }));
     if (adapter.finish) {
         await adapter.finish();

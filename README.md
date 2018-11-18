@@ -26,18 +26,22 @@ For example:
 
 ```typescript
 import { IBankAdapter, registerAdapter } from "ynab-api-importer";
+import { SaveTransaction } from "ynab";
 
 registerAdapter("fancy-bank", () => new FancyBankAdapter());
 
 class FancyBankAdapter implements IBankAdapter {
-  public async login(username: string, password: string) {
+  public async login(username: string, password: string): boolean {
     // Add your implmentation here
     return true;
   }
 
-  public async exportAccount(name: string) {
+  public async exportAccount(
+    name: string,
+    ynabAccountID: string
+  ): Promise<SaveTransaction[]> {
     // Add your implmentation here
-    return "ofx-string-here";
+    return [];
   }
 
   // Optional cleanup

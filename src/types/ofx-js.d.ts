@@ -60,7 +60,7 @@ declare module "ofx-js" {
   interface ITransactionListWrapper {
     DTEND: string;
     DTSTART: string;
-    STMTTRN: TTransactionList;
+    STMTTRN: ITransaction | TTransactionList;
   }
 
   export type TTransactionList = Array<ITransaction>;

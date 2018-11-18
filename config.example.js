@@ -1,4 +1,8 @@
 module.exports = {
+  // Register custom adapters here.
+  // { nameOfAdapter: 'npm-module-name-here' }
+  registerAdapters: {},
+
   ynabAccessToken: process.env.YNAB_ACCESS_TOKEN || "",
   ynabBudgetID: process.env.YNAB_BUDGET_ID || "ynab-budget-id-here",
 

@@ -1,6 +1,8 @@
 import moment from "moment-timezone";
 import puppeteer, { Browser, Page } from "puppeteer";
 import { IBankAdapter } from "../index";
+import { ofxToSaveTransactions } from "../ynab";
+import { SaveTransaction } from "ynab";
 
 export class BnzAdapter implements IBankAdapter {
   public browser?: Browser;
@@ -24,7 +26,10 @@ export class BnzAdapter implements IBankAdapter {
     return true;
   }
 
-  public async exportAccount(accountName: string): Promise<string | null> {
+  public async exportAccount(
+    accountName: string,
+    ynabAccountID: string
+  ): Promise<SaveTransaction[]> {
     const accountID = await this.getAccountID(accountName);
     const fromDate = moment()
       .tz("Pacific/Auckland")
@@ -51,7 +56,9 @@ export class BnzAdapter implements IBankAdapter {
       return body;
     }, exportURL)) as string;
 
-    return Buffer.from(JSON.parse(resp), "base64").toString();
+    const ofx = Buffer.from(JSON.parse(resp), "base64").toString();
+    const transactions = await ofxToSaveTransactions(ofx, ynabAccountID);
+    return transactions;
   }
 
   public async finish() {

@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const _1 = __importDefault(require("."));
 const config = require("../config");
 _1.default({
+    registerAdapters: config.registerAdapters,
     accounts: config.accounts,
     adapter: config.adapter,
     password: config.password,

@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const moment_timezone_1 = __importDefault(require("moment-timezone"));
 const puppeteer_1 = __importDefault(require("puppeteer"));
+const ynab_1 = require("../ynab");
 class BnzAdapter {
     async login(username, password) {
         await this.setupBrowser();
@@ -21,7 +22,7 @@ class BnzAdapter {
         }
         return true;
     }
-    async exportAccount(accountName) {
+    async exportAccount(accountName, ynabAccountID) {
         const accountID = await this.getAccountID(accountName);
         const fromDate = moment_timezone_1.default()
             .tz("Pacific/Auckland")
@@ -43,7 +44,9 @@ class BnzAdapter {
             const body = await res.text();
             return body;
         }, exportURL));
-        return Buffer.from(JSON.parse(resp), "base64").toString();
+        const ofx = Buffer.from(JSON.parse(resp), "base64").toString();
+        const transactions = await ynab_1.ofxToSaveTransactions(ofx, ynabAccountID);
+        return transactions;
     }
     async finish() {
         await this.browser.close();
