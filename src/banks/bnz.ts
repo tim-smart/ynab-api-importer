@@ -33,7 +33,7 @@ export class BnzAdapter implements IBankAdapter {
     const accountID = await this.getAccountID(accountName);
     const fromDate = moment()
       .tz("Pacific/Auckland")
-      .subtract(4, "days")
+      .subtract(8, "days")
       .format("YYYY-MM-DD");
     const toDate = moment()
       .tz("Pacific/Auckland")

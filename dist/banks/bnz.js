@@ -26,7 +26,7 @@ class BnzAdapter {
         const accountID = await this.getAccountID(accountName);
         const fromDate = moment_timezone_1.default()
             .tz("Pacific/Auckland")
-            .subtract(4, "days")
+            .subtract(8, "days")
             .format("YYYY-MM-DD");
         const toDate = moment_timezone_1.default()
             .tz("Pacific/Auckland")
