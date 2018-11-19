@@ -6,7 +6,7 @@ export const ADAPTERS: { [name: string]: IBankAdapter } = {};
 
 export interface IBankAdapter {
   // Prepares the adapter for exporting the OFX feed
-  login(username: string, password: string): Promise<boolean>;
+  prepare(options: any): Promise<boolean>;
   // Exports an account's OFX feed for the last 3 days, or returns null;
   exportAccount(
     accountName: string,
@@ -32,8 +32,7 @@ export default async function ynabAPIImporter(opts: {
   accounts: { [accountName: string]: string };
 
   adapter: string;
-  username: string;
-  password: string;
+  adapterOptions: any;
 }) {
   if (opts.registerAdapters) {
     Object.keys(opts.registerAdapters).forEach(name => {
@@ -47,10 +46,10 @@ export default async function ynabAPIImporter(opts: {
     throw new Error(`Bank adapter '${opts.adapter} not registered.`);
   }
 
-  logger.info(`Logging into bank '${opts.adapter}'`);
-  const loggedIn = await adapter.login(opts.username, opts.password);
+  logger.info(`Preparing bank adapter '${opts.adapter}'`);
+  const loggedIn = await adapter.prepare(opts);
   if (!loggedIn) {
-    throw new Error(`Could not login to bank '${opts.adapter}.`);
+    throw new Error(`Could not prepare bank adapter '${opts.adapter}.`);
   }
 
   await Promise.all(

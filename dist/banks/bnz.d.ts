@@ -4,7 +4,10 @@ import { SaveTransaction } from "ynab";
 export declare class BnzAdapter implements IBankAdapter {
     browser?: Browser;
     page?: Page;
-    login(username: string, password: string): Promise<boolean>;
+    prepare(opts: {
+        accessNumber: string;
+        password: string;
+    }): Promise<boolean>;
     exportAccount(accountName: string, ynabAccountID: string): Promise<SaveTransaction[]>;
     finish(): Promise<void>;
     private setupBrowser;

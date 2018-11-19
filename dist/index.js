@@ -11,7 +11,6 @@ exports.ADAPTERS = {};
 function registerAdapter(name, fn) {
     exports.ADAPTERS[name] = fn();
 }
-exports.registerAdapter = registerAdapter;
 // Internal adapters
 registerAdapter("bnz", () => new bnz_1.BnzAdapter());
 async function ynabAPIImporter(opts) {
@@ -25,10 +24,10 @@ async function ynabAPIImporter(opts) {
     if (!adapter) {
         throw new Error(`Bank adapter '${opts.adapter} not registered.`);
     }
-    logger_js_1.default.info(`Logging into bank '${opts.adapter}'`);
-    const loggedIn = await adapter.login(opts.username, opts.password);
+    logger_js_1.default.info(`Preparing bank adapter '${opts.adapter}'`);
+    const loggedIn = await adapter.prepare(opts);
     if (!loggedIn) {
-        throw new Error(`Could not login to bank '${opts.adapter}.`);
+        throw new Error(`Could not prepare bank adapter '${opts.adapter}.`);
     }
     await Promise.all(Object.keys(opts.accounts).map(async (accountName) => {
         logger_js_1.default.info(`Exporting ${accountName}`);

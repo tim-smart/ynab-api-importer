@@ -7,12 +7,12 @@ const moment_timezone_1 = __importDefault(require("moment-timezone"));
 const puppeteer_1 = __importDefault(require("puppeteer"));
 const ynab_1 = require("../ynab");
 class BnzAdapter {
-    async login(username, password) {
+    async prepare(opts) {
         await this.setupBrowser();
         this.page = await this.browser.newPage();
         await this.page.goto("https://secure.bnz.co.nz/auth/personal-login");
-        await this.page.type('input[name="principal"]', username);
-        await this.page.type('input[name="credentials"]', password);
+        await this.page.type('input[name="principal"]', opts.accessNumber);
+        await this.page.type('input[name="credentials"]', opts.password);
         await this.page.keyboard.press("Enter");
         try {
             await this.page.waitForSelector("span.js-main-menu-button-text");

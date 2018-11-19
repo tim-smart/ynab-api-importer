@@ -29,7 +29,7 @@ import { IBankAdapter } from "ynab-api-importer";
 import { SaveTransaction } from "ynab";
 
 export default class FancyBankAdapter implements IBankAdapter {
-  public async login(username: string, password: string): boolean {
+  public async prepare(options: any): boolean {
     // Add your implmentation here
     return true;
   }

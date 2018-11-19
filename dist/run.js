@@ -9,8 +9,7 @@ _1.default({
     registerAdapters: config.registerAdapters,
     accounts: config.accounts,
     adapter: config.adapter,
-    password: config.password,
-    username: config.username,
+    adapterOptions: config.adapterOptions,
     ynabAccessToken: config.ynabAccessToken,
     ynabBudgetID: config.ynabBudgetID
 }).catch(err => {

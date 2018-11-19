@@ -8,13 +8,13 @@ export class BnzAdapter implements IBankAdapter {
   public browser?: Browser;
   public page?: Page;
 
-  public async login(username: string, password: string) {
+  public async prepare(opts: { accessNumber: string; password: string }) {
     await this.setupBrowser();
     this.page = await this.browser!.newPage();
 
     await this.page.goto("https://secure.bnz.co.nz/auth/personal-login");
-    await this.page.type('input[name="principal"]', username);
-    await this.page.type('input[name="credentials"]', password);
+    await this.page.type('input[name="principal"]', opts.accessNumber);
+    await this.page.type('input[name="credentials"]', opts.password);
     await this.page.keyboard.press("Enter");
 
     try {
