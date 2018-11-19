@@ -25,7 +25,7 @@ async function ynabAPIImporter(opts) {
         throw new Error(`Bank adapter '${opts.adapter} not registered.`);
     }
     logger_js_1.default.info(`Preparing bank adapter '${opts.adapter}'`);
-    const loggedIn = await adapter.prepare(opts);
+    const loggedIn = await adapter.prepare(opts.adapterOptions);
     if (!loggedIn) {
         throw new Error(`Could not prepare bank adapter '${opts.adapter}.`);
     }

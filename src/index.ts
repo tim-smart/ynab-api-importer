@@ -47,7 +47,7 @@ export default async function ynabAPIImporter(opts: {
   }
 
   logger.info(`Preparing bank adapter '${opts.adapter}'`);
-  const loggedIn = await adapter.prepare(opts);
+  const loggedIn = await adapter.prepare(opts.adapterOptions);
   if (!loggedIn) {
     throw new Error(`Could not prepare bank adapter '${opts.adapter}.`);
   }

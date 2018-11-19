@@ -14,6 +14,6 @@ ynabAPIImporter({
   ynabBudgetID: config.ynabBudgetID
 }).catch(err => {
   // tslint:disable no-console
-  console.error(err);
+  console.error(err.stack);
   process.exit();
 });
