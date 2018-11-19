@@ -2,6 +2,9 @@ import logger from "./logger.js";
 import { API, SaveTransaction } from "ynab";
 import { BnzAdapter } from "./banks/bnz";
 
+// Export useful OFX conversion function
+export { ofxToSaveTransactions } from "./ynab";
+
 export const ADAPTERS: { [name: string]: IBankAdapter } = {};
 
 export interface IBankAdapter {

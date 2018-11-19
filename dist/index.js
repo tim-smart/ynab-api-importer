@@ -6,6 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const logger_js_1 = __importDefault(require("./logger.js"));
 const ynab_1 = require("ynab");
 const bnz_1 = require("./banks/bnz");
+// Export useful OFX conversion function
+var ynab_2 = require("./ynab");
+exports.ofxToSaveTransactions = ynab_2.ofxToSaveTransactions;
 exports.ADAPTERS = {};
 // Function to register new adapters
 function registerAdapter(name, fn) {

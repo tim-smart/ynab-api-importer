@@ -1,4 +1,5 @@
 import { SaveTransaction } from "ynab";
+export { ofxToSaveTransactions } from "./ynab";
 export declare const ADAPTERS: {
     [name: string]: IBankAdapter;
 };
