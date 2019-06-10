@@ -17,20 +17,20 @@
   "author": "Tim Smart <tim@fostle.com>",
   "license": "MIT",
   "devDependencies": {
-    "@types/moment-timezone": "^0.5.9",
-    "@types/node": "^10.12.5",
-    "@types/pino": "^5.8.1",
-    "@types/puppeteer": "^1.10.0",
-    "prettier": "^1.15.1",
-    "tslint": "^5.11.0",
-    "tslint-config-prettier": "^1.15.0",
-    "typescript": "^3.1.6"
+    "@types/moment-timezone": "^0.5.12",
+    "@types/node": "^10.14.8",
+    "@types/pino": "^5.8.8",
+    "@types/puppeteer": "^1.12.4",
+    "prettier": "^1.18.2",
+    "tslint": "^5.17.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.5.1"
   },
   "dependencies": {
-    "moment": "^2.22.2",
-    "moment-timezone": "^0.5.23",
+    "moment": "^2.24.0",
+    "moment-timezone": "^0.5.25",
     "ofx-js": "^0.1.1",
-    "puppeteer": "^1.10.0",
-    "ynab": "^1.9.0"
+    "puppeteer": "^1.17.0",
+    "ynab": "^1.12.0"
   }
 }
