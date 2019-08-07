@@ -13,8 +13,8 @@ export class BnzAdapter implements IBankAdapter {
     this.page = await this.browser!.newPage();
 
     await this.page.goto("https://secure.bnz.co.nz/auth/personal-login");
-    await this.page.type('input[name="principal"]', opts.accessNumber);
-    await this.page.type('input[name="credentials"]', opts.password);
+    await this.page.type("input#field-principal", opts.accessNumber);
+    await this.page.type("input#field-credentials", opts.password);
     await this.page.keyboard.press("Enter");
 
     try {
@@ -86,10 +86,10 @@ export class BnzAdapter implements IBankAdapter {
   private async getAccountID(accountName: string) {
     const account = await this.getAccountButton(accountName);
     if (account) {
-      const id: string = await this.page!.evaluate(
+      const id = (await this.page!.evaluate(
         (el: HTMLDivElement) => el.dataset.dragId,
         account
-      );
+      )) as string;
       return id;
     }
 
