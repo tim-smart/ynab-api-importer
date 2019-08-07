@@ -4,9 +4,29 @@ import { IBankAdapter } from "../index";
 import { ofxToSaveTransactions } from "../ynab";
 import { SaveTransaction } from "ynab";
 
+interface IBnzAccount {
+  id: string;
+  nickname: string;
+
+  type: string;
+  productCode: string;
+
+  bankCode: string;
+  branchCode: string;
+  accountNumber: string;
+  suffix: string;
+}
+
+interface IBnzAccountList {
+  accountCount: number;
+  accountList: IBnzAccount[];
+}
+
 export class BnzAdapter implements IBankAdapter {
   public browser?: Browser;
   public page?: Page;
+
+  private accountListCache?: IBnzAccountList;
 
   public async prepare(opts: { accessNumber: string; password: string }) {
     await this.setupBrowser();
@@ -76,21 +96,27 @@ export class BnzAdapter implements IBankAdapter {
     });
   }
 
-  private async getAccountButton(accountName: string) {
-    const accounts = await this.page!.$x(
-      `//h3[@title='${accountName}']/ancestor::div[contains(@class, ' js-account ')]`
-    );
-    return accounts[0];
+  private async getAccounts() {
+    if (this.accountListCache) {
+      return this.accountListCache;
+    }
+
+    this.accountListCache = (await this.page!.evaluate(async () => {
+      const res = await fetch("https://www.bnz.co.nz/ib/api/accounts");
+      const json = await res.json();
+      return json;
+    })) as IBnzAccountList;
+
+    return this.accountListCache;
   }
 
   private async getAccountID(accountName: string) {
-    const account = await this.getAccountButton(accountName);
-    if (account) {
-      const id = (await this.page!.evaluate(
-        (el: HTMLDivElement) => el.dataset.dragId,
-        account
-      )) as string;
-      return id;
+    const accounts = await this.getAccounts();
+
+    for (const account of accounts.accountList) {
+      if (account.nickname === accountName) {
+        return account.id;
+      }
     }
 
     return null;
