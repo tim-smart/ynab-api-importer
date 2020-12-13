@@ -1,11 +1,11 @@
-import { Page } from "puppeteer";
-import { TBankAdapter } from "../index";
-import { ofxToSaveTransactions } from "../ynab";
-import { SaveTransaction } from "ynab";
-import * as O from "fp-ts/Option";
 import * as F from "fp-ts/function";
+import * as O from "fp-ts/Option";
 import { DateTime } from "luxon";
+import { Page } from "puppeteer";
+import { SaveTransaction } from "ynab";
+import { TBankAdapter } from "../adapters";
 import { setupPage } from "../puppeteer";
+import { ofxToSaveTransactions } from "../ynab";
 
 interface IBnzAccount {
   id: string;
