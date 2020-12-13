@@ -20,41 +20,48 @@ Then run `npm install --production` and `npm start`.
 
 If you would like to create your own adapter, take a look at `src/banks/bnz.ts`.
 
-You need to implent the `IBankAdapter` interface and make it the default export.
-Users can then register it using the `registerAdapters` config option (see `config.example.js`).
+You need to implement a `TBankAdapter` function and make it the default export
+of your NPM module.
+Users can then register it using the `registerAdapters` config option (see
+`config.example.js`).
 
 In your `peerDependencies` include `ynab-api-importer` and `ynab`;
 
 For example:
 
 ```typescript
-import { IBankAdapter, ofxToSaveTransactions } from "ynab-api-importer";
+import { Page } from "puppeteer";
+import {
+  TBankAdapter,
+  ofxToSaveTransactions,
+  setupPage,
+} from "ynab-api-importer";
 import { SaveTransaction } from "ynab";
 
-export default class FancyBankAdapter implements IBankAdapter {
-  public async prepare(options: any): boolean {
-    // Add your implmentation here
-    // You can login here, setup puppeteer etc.
-    return true;
-  }
+const export = (page: Page) => async (
+  accountID: string,
+  ynabAccountID: string,
+): Promise<SaveTransaction[]> => {
+  // Add your implmentation here
+  // This will be run once for every account
+  // It needs to return an array of YNAB transactions
 
-  public async exportAccount(
-    name: string,
-    ynabAccountID: string
-  ): Promise<SaveTransaction[]> {
-    // Add your implmentation here
-    // This will be run once for every account
-    // It will return an array of YNAB transactions
-    const transactions = await ofxToSaveTransactions(
-      "ofx-string-here",
-      ynabAccountID
-    );
-    return transactions;
-  }
-
-  // Optional cleanup
-  public async finish() {
-    // Add implmentation
-  }
+  const ofxString = await doSomethingWith(page);
+  const transactions = await ofxToSaveTransactions(
+    ofxString,
+    ynabAccountID,
+  );
+  return transactions;
 }
+
+const fancyBankAdapter: TBankAdapter = async () =>{
+  // You can login here, setup puppeteer etc.
+  const { browser, page } = await setupPage();
+
+  // Return two functions. First one exports the transactions. Second one does
+  // cleanup.
+  return [export(page), () => browser.close()];
+}
+
+export default fancyBankAdapter;
 ```

@@ -1,80 +1,115 @@
-import logger from "./logger.js";
+import logger from "./logger";
 import { API, SaveTransaction } from "ynab";
-import { BnzAdapter } from "./banks/bnz";
+import { bnzAdapter } from "./banks/bnz";
+import * as Rx from "rxjs";
+import * as RxOp from "rxjs/operators";
+import * as O from "fp-ts/Option";
+import * as F from "fp-ts/function";
 
-// Export useful OFX conversion function
-export { ofxToSaveTransactions } from "./ynab";
+export * from "./puppeteer";
+export * from "./ynab";
 
-export const ADAPTERS: { [name: string]: IBankAdapter } = {};
+/**
+ * Adapters are higher order functions that take options and return retieval
+ * and cleanup functions.
+ */
+export type TBankAdapter = (opts: any) => Promise<TBankAdapterFunctions>;
 
-export interface IBankAdapter {
-  // Prepares the adapter for exporting the OFX feed
-  prepare(options: any): Promise<boolean>;
-  // Exports an account's OFX feed for the last 3 days, or returns null;
-  exportAccount(
-    accountName: string,
-    ynabAccountID: string
-  ): Promise<SaveTransaction[]>;
-  // Perform optional adapter clean up etc.
-  finish?(): Promise<void>;
+export type TBankAdapterFunctions = [
+  /** Transaction retieval function */
+  (
+    adapterAccountID: string,
+    ynabAccountID: string,
+  ) => Promise<SaveTransaction[]>,
+  /** Cleanup function */
+  () => Promise<void>,
+];
+
+const adapters = new Map<string, TBankAdapter>([["bnz", bnzAdapter]]);
+export const availableAdapters = () => Array.from(adapters.keys());
+export function registerAdapter(name: string, adapter: TBankAdapter) {
+  adapters.set(name, adapter);
 }
-
-// Function to register new adapters
-function registerAdapter(name: string, fn: () => IBankAdapter) {
-  ADAPTERS[name] = fn();
-}
-
-// Internal adapters
-registerAdapter("bnz", () => new BnzAdapter());
+const getAdapter = (name: string) => O.fromNullable(adapters.get(name));
 
 export default async function ynabAPIImporter(opts: {
   registerAdapters?: { [name: string]: string };
 
   ynabAccessToken: string;
   ynabBudgetID: string;
-  accounts: { [accountName: string]: string };
 
-  adapter: string;
-  adapterOptions: any;
+  banks: { [name: string]: { adapter: string; options: any } };
+  accounts: { bank: string; id: string; ynabID: string }[];
 }) {
   if (opts.registerAdapters) {
-    Object.keys(opts.registerAdapters).forEach(name => {
-      registerAdapter(name, require(opts.registerAdapters![name]));
+    Object.entries(opts.registerAdapters).forEach(([name, module]) => {
+      registerAdapter(name, require(module));
     });
   }
 
-  const ynab = new API(opts.ynabAccessToken);
-  const adapter = ADAPTERS[opts.adapter];
-  if (!adapter) {
-    throw new Error(`Bank adapter '${opts.adapter} not registered.`);
-  }
+  const banks$ = Rx.from(Object.entries(opts.banks)).pipe(
+    RxOp.flatMap(([name, { adapter, options }]) =>
+      F.pipe(
+        getAdapter(adapter),
+        O.fold(
+          () => Rx.EMPTY,
+          a => Rx.zip(Rx.of(name), a(options)),
+        ),
+      ),
+    ),
 
-  logger.info(`Preparing bank adapter '${opts.adapter}'`);
-  const loggedIn = await adapter.prepare(opts.adapterOptions);
-  if (!loggedIn) {
-    throw new Error(`Could not prepare bank adapter '${opts.adapter}.`);
-  }
-
-  await Promise.all(
-    Object.keys(opts.accounts).map(async accountName => {
-      logger.info(`Exporting ${accountName}`);
-      const ynabAccountID = opts.accounts[accountName] as string;
-      const transactions = await adapter.exportAccount(
-        accountName,
-        ynabAccountID
-      );
-      if (!transactions.length) {
-        return;
-      }
-
-      logger.info(`Importing ${accountName} (${transactions.length})`);
-      await ynab.transactions.createTransactions(opts.ynabBudgetID, {
-        transactions
-      });
-    })
+    RxOp.reduce(
+      (banks, [name, fns]) => banks.set(name, fns),
+      new Map<string, TBankAdapterFunctions>(),
+    ),
   );
+  const banks = await Rx.lastValueFrom(banks$);
+  const getBank = (name: string) => O.fromNullable(banks.get(name));
 
-  if (adapter.finish) {
-    await adapter.finish();
-  }
+  const ynab = new API(opts.ynabAccessToken);
+
+  await Rx.from(opts.accounts)
+    .pipe(
+      RxOp.flatMap(account =>
+        F.pipe(
+          getBank(account.bank),
+          O.fold(
+            () => {
+              logger.info("Could not find bank:", account.bank);
+              return Rx.EMPTY;
+            },
+            ([list]) =>
+              Rx.of({
+                account,
+                list,
+              }),
+          ),
+        ),
+      ),
+
+      RxOp.tap(({ account: { id, bank } }) =>
+        logger.info(`Exporting ${bank} - ${id}`),
+      ),
+
+      RxOp.flatMap(({ account: { bank, id, ynabID }, list }) =>
+        Rx.from(list(id, ynabID)).pipe(
+          RxOp.tap(transactions =>
+            logger.info(`Importing ${bank} - ${id} (${transactions.length})`),
+          ),
+
+          RxOp.flatMap(transactions =>
+            ynab.transactions.createTransactions(opts.ynabBudgetID, {
+              transactions,
+            }),
+          ),
+
+          RxOp.tap(() => logger.info(`Imported ${bank} - ${id}`)),
+        ),
+      ),
+    )
+    .toPromise();
+
+  await Rx.from(banks.values())
+    .pipe(RxOp.flatMap(([_, cleanup]) => cleanup()))
+    .toPromise();
 }

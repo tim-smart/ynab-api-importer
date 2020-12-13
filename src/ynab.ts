@@ -1,10 +1,10 @@
 import { ITransaction, parse, TTransactionList } from "ofx-js";
 import { SaveTransaction } from "ynab";
-import moment = require("moment-timezone");
+import { DateTime } from "luxon";
 
 export async function ofxToSaveTransactions(
   input: string,
-  ynabAccountID: string
+  ynabAccountID: string,
 ): Promise<SaveTransaction[]> {
   const res = await parse(input);
   const counters: { [index: string]: number } = {};
@@ -39,7 +39,8 @@ export async function ofxToSaveTransactions(
   return transactionList.map(
     (trans): SaveTransaction => {
       const amount = +(trans.TRNAMT.replace(".", "") + "0");
-      const date = moment(trans.DTPOSTED, "YYYYMMDD").format("YYYY-MM-DD");
+      const parsedDate = DateTime.fromFormat(trans.DTPOSTED, "yyyyMMdd");
+      const date = parsedDate.toFormat("yyyy-MM-dd");
 
       return {
         account_id: ynabAccountID,
@@ -47,8 +48,8 @@ export async function ofxToSaveTransactions(
         date,
         import_id: getImportID(date, amount),
         memo: trans.MEMO,
-        payee_name: trans.NAME
+        payee_name: trans.NAME,
       };
-    }
+    },
   );
 }
