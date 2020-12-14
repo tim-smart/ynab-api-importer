@@ -2,7 +2,7 @@ import * as F from "fp-ts/function";
 import * as O from "fp-ts/Option";
 import * as Rx from "rxjs";
 import * as RxOp from "rxjs/operators";
-import { API } from "ynab";
+import { API, SaveTransaction } from "ynab";
 import * as Adapters from "./adapters";
 import logger from "./logger";
 
@@ -27,11 +27,7 @@ export const sync = (ynab: API) => (ynabBudgetID: string) => (
             logger.info("Could not find bank:", account.bank);
             return Rx.EMPTY;
           },
-          ([list]) =>
-            Rx.of({
-              account,
-              list,
-            }),
+          ([fetch, _cleanup]) => Rx.of({ account, fetch }),
         ),
       ),
     ),
@@ -40,19 +36,19 @@ export const sync = (ynab: API) => (ynabBudgetID: string) => (
       logger.info(`Exporting ${bank} - ${id}`),
     ),
 
-    RxOp.flatMap(({ account: { bank, id, ynabID }, list }) =>
-      Rx.from(list(id, ynabID)).pipe(
-        RxOp.tap(transactions =>
-          logger.info(`Importing ${bank} - ${id} (${transactions.length})`),
-        ),
-
-        RxOp.flatMap(transactions =>
-          ynab.transactions.createTransactions(ynabBudgetID, {
-            transactions,
-          }),
-        ),
-
-        RxOp.tap(() => logger.info(`Imported ${bank} - ${id}`)),
-      ),
+    RxOp.flatMap(({ account: { bank, id, ynabID }, fetch }) =>
+      fetch(id, ynabID).then(r => {
+        logger.info(`Exported ${bank} - ${id} (${r.length})`);
+        return r;
+      }),
     ),
+
+    RxOp.reduce((acc, t) => acc.concat(t), [] as SaveTransaction[]),
+    RxOp.flatMap(transactions =>
+      ynab.transactions.createTransactions(ynabBudgetID, {
+        transactions,
+      }),
+    ),
+
+    RxOp.tap(() => logger.info("Transactions imported")),
   );
