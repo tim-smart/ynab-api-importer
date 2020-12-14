@@ -7,6 +7,9 @@
   "files": [
     "dist/"
   ],
+  "bin": {
+    "ynab-importer": "./bin/run"
+  },
   "scripts": {
     "build": "rm -rf dist && tsc -p .",
     "start": "node dist/run.js",

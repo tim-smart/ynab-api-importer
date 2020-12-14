@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+
+const importer = require("../dist/index").default;
+const path = require("path");
+
+const config = require(path.resolve(process.argv[2]));
+
+importer(config).catch(err => {
+  console.error(err);
+  process.exit(1);
+});
