@@ -5,7 +5,7 @@
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
-    "sourceMap": true,
+    "inlineSourceMap": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "declaration": true
