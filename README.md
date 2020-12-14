@@ -10,11 +10,21 @@ Current the following adapters are implemented:
 
 - BNZ (Bank of New Zealand)
 
+## Installation
+
+```
+npm i -g ynab-api-importer
+```
+
 ## Configuration
 
 Copy `config.example.js` to `config.js` and change to your liking.
 
-Then run `npm install --production` and `npm start`.
+Then run:
+
+```
+ynab-importer config.js
+```
 
 ## For developers
 
@@ -54,7 +64,7 @@ const export = (page: Page) => async (
   return transactions;
 }
 
-const fancyBankAdapter: TBankAdapter = async () =>{
+const fancyBankAdapter: TBankAdapter = async (options: any) =>{
   // You can login here, setup puppeteer etc.
   const { browser, page } = await setupPage();
 
