@@ -1,10 +1,11 @@
 {
   "name": "ynab-api-importer",
-  "version": "3.0.4",
+  "version": "3.0.5",
   "description": "Import bank transactions into YNAB",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
+    "bin/",
     "dist/"
   ],
   "bin": {
