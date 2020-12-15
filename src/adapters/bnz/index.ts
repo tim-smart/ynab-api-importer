@@ -51,14 +51,14 @@ const isPendingInternational = (t: Transaction) =>
   isPending(t) && isInternational(t);
 const filterPendingInternational = (t: Transaction[]) =>
   t.filter(t => !isPendingInternational(t));
-const filterPending = (t: Transaction[]) => t.filter(() => !isPending);
+const filterPending = (t: Transaction[]) => t.filter(t => !isPending(t));
 
 const memoFromTransaction = ({
   thisAccount: { details },
 }: Transaction): string =>
   [details.code, details.reference, details.particulars]
     .filter(s => !!s)
-    .join(" ") || "memo";
+    .join(" ");
 
 const payeeFromTransaction = (t: Transaction): string =>
   F.pipe(
