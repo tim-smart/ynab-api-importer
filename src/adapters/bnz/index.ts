@@ -56,7 +56,7 @@ const filterPending = (t: Transaction[]) => t.filter(t => !isPending(t));
 const memoFromTransaction = ({
   thisAccount: { details },
 }: Transaction): string =>
-  [details.code, details.reference, details.particulars]
+  [details.particulars, details.reference, details.code]
     .filter(s => !!s)
     .join(" ");
 
