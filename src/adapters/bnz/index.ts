@@ -6,13 +6,16 @@ import { SaveTransaction } from "ynab";
 import { Adapters, Ynab, setupPage } from "../../";
 import { IBnzAccountList, Transaction, TransactionsResponse } from "./types";
 
-const login = (page: Page) => (accessNumber: string, password: string) =>
-  page
-    .goto("https://secure.bnz.co.nz/auth/personal-login")
-    .then(() => page.type("input#field-principal", accessNumber))
-    .then(() => page.type("input#field-credentials", password))
-    .then(() => page.keyboard.press("Enter"))
-    .then(() => page.waitForSelector("span.js-main-menu-button-text"));
+const login = (page: Page) => async (
+  accessNumber: string,
+  password: string,
+) => {
+  await page.goto("https://secure.bnz.co.nz/auth/personal-login");
+  await page.type("input#field-principal", accessNumber);
+  await page.type("input#field-credentials", password);
+  await page.keyboard.press("Enter");
+  await page.waitForSelector("span.js-main-menu-button-text");
+};
 
 const request = (page: Page) => <T>(
   path: string,
