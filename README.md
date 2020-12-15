@@ -42,8 +42,8 @@ For example:
 ```typescript
 import { Page } from "puppeteer";
 import {
-  TBankAdapter,
-  ofxToSaveTransactions,
+  Adapters,
+  Ynab,
   setupPage,
 } from "ynab-api-importer";
 import { SaveTransaction } from "ynab";
@@ -57,14 +57,14 @@ const export = (page: Page) => async (
   // It needs to return an array of YNAB transactions
 
   const ofxString = await doSomethingWith(page);
-  const transactions = await ofxToSaveTransactions(
+  const transactions = await Ynab.ofxToSaveTransactions(
     ofxString,
     ynabAccountID,
   );
   return transactions;
 }
 
-const fancyBankAdapter: TBankAdapter = async (options: any) =>{
+const fancyBankAdapter: Adapters.TBankAdapter = async (options: any) =>{
   // You can login here, setup puppeteer etc.
   const { browser, page } = await setupPage();
 

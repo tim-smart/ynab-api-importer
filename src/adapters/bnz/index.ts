@@ -3,9 +3,7 @@ import * as O from "fp-ts/Option";
 import { DateTime } from "luxon";
 import { Page } from "puppeteer";
 import { SaveTransaction } from "ynab";
-import { TBankAdapter } from "../../adapters";
-import { setupPage } from "../../puppeteer";
-import * as Ynab from "../../ynab";
+import { Adapters, Ynab, setupPage } from "../../";
 import { IBnzAccountList, Transaction, TransactionsResponse } from "./types";
 
 const login = (page: Page) => (accessNumber: string, password: string) =>
@@ -109,7 +107,7 @@ const ynabTransactions = (page: Page) => (accounts: IBnzAccountList) => (
     ),
   );
 
-export const bnzAdapter: TBankAdapter = async ({
+export const bnzAdapter: Adapters.TBankAdapter = async ({
   accessNumber,
   password,
   includePending = false,

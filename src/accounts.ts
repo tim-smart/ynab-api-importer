@@ -3,7 +3,7 @@ import * as O from "fp-ts/Option";
 import * as Rx from "rxjs";
 import * as RxOp from "rxjs/operators";
 import { API, SaveTransaction } from "ynab";
-import * as Adapters from "./adapters";
+import { TBankMap } from "./banks";
 import logger from "./logger";
 
 export interface IAccount {
@@ -16,7 +16,7 @@ export interface IAccount {
 }
 
 export const sync = (ynab: API) => (ynabBudgetID: string) => (
-  banks: Map<string, Adapters.TBankAdapterFunctions>,
+  banks: TBankMap,
 ) => (accounts: IAccount[]) =>
   Rx.from(accounts).pipe(
     RxOp.flatMap(account =>

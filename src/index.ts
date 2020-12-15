@@ -6,7 +6,10 @@ import * as Banks from "./banks";
 import { IBanks } from "./banks";
 
 export * from "./puppeteer";
-export * from "./ynab";
+export * as Ynab from "./ynab";
+export * as Banks from "./banks";
+export * as Adapters from "./adapters";
+export * as Accounts from "./accounts";
 
 export default async function ynabAPIImporter(opts: {
   registerAdapters?: { [name: string]: string };

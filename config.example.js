@@ -12,6 +12,7 @@ module.exports = {
       options: {
         accessNumber: process.env.BNZ_ACCESS_NUMBER || "",
         password: process.env.BNZ_PASSWORD || "",
+        includePending: false,
       },
     },
   },
