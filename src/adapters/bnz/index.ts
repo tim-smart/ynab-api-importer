@@ -46,11 +46,11 @@ const listTransactions = (page: Page) => (accountID: string) => {
 };
 
 const isPending = (t: Transaction) => t.status.code !== "POSTED";
-// const isInternational = (t: Transaction) => t.value.currency !== "NZD";
-// const isPendingInternational = (t: Transaction) =>
-//   isPending(t) && isInternational(t);
-// const filterPendingInternational = (t: Transaction[]) =>
-//   t.filter(t => !isPendingInternational(t));
+const isInternational = (t: Transaction) => t.value.currency !== "NZD";
+const isPendingInternational = (t: Transaction) =>
+  isPending(t) && isInternational(t);
+const filterPendingInternational = (t: Transaction[]) =>
+  t.filter(t => !isPendingInternational(t));
 const filterPending = (t: Transaction[]) => t.filter(() => !isPending);
 
 const memoFromTransaction = ({
@@ -95,9 +95,8 @@ const convertTransactions = (ynabAccountID: string) => (
 };
 
 const ynabTransactions = (page: Page) => (accounts: IBnzAccountList) => (
-  accountName: string,
-  ynabAccountID: string,
-): Promise<SaveTransaction[]> =>
+  includePending: boolean,
+) => (accountName: string, ynabAccountID: string): Promise<SaveTransaction[]> =>
   F.pipe(
     findAccount(accounts)(accountName),
     O.fold(
@@ -105,7 +104,7 @@ const ynabTransactions = (page: Page) => (accounts: IBnzAccountList) => (
       account =>
         listTransactions(page)(account.id)
           .then(r => r.transactions)
-          .then(filterPending)
+          .then(includePending ? filterPendingInternational : filterPending)
           .then(convertTransactions(ynabAccountID)),
     ),
   );
@@ -113,14 +112,19 @@ const ynabTransactions = (page: Page) => (accounts: IBnzAccountList) => (
 export const bnzAdapter: TBankAdapter = async ({
   accessNumber,
   password,
+  includePending = false,
 }: {
   accessNumber: string;
   password: string;
+  includePending?: boolean;
 }) => {
   const { browser, page } = await setupPage();
 
   await login(page)(accessNumber, password);
   const accounts = await getAccounts(page);
 
-  return [ynabTransactions(page)(accounts), () => browser.close()];
+  return [
+    ynabTransactions(page)(accounts)(includePending),
+    () => browser.close(),
+  ];
 };
