@@ -1,6 +1,40 @@
 import { ITransaction, parse, TTransactionList } from "ofx-js";
 import { SaveTransaction } from "ynab";
 import { DateTime } from "luxon";
+import * as O from "fp-ts/Option";
+import * as F from "fp-ts/function";
+
+const padDecimals = (input: string): string =>
+  input.length < 2 ? padDecimals(input + "0") : input;
+
+export const amountFromString = (input: string) => {
+  const split = input.split(".");
+  const int = split[0];
+  const decimals = F.pipe(
+    O.fromNullable(split[1]),
+    O.map(padDecimals),
+    O.getOrElse(() => "00"),
+  );
+
+  return +`${int}${decimals}0`;
+};
+
+export const importID = () => {
+  const counters = new Map<string, number>();
+
+  return (date: DateTime, amount: number) => {
+    const prefix = `YNAB:${amount}:${date.toISODate()}`;
+
+    if (counters.has(prefix)) {
+      const count = counters.get(prefix)!;
+      counters.set(prefix, count + 1);
+    } else {
+      counters.set(prefix, 1);
+    }
+
+    return `${prefix}:${counters.get(prefix)}`;
+  };
+};
 
 export async function ofxToSaveTransactions(
   input: string,

@@ -44,6 +44,8 @@ export const sync = (ynab: API) => (ynabBudgetID: string) => (
     ),
 
     RxOp.reduce((acc, t) => acc.concat(t), [] as SaveTransaction[]),
+    RxOp.filter(t => !!t.length),
+
     RxOp.flatMap(transactions =>
       ynab.transactions.createTransactions(ynabBudgetID, {
         transactions,
