@@ -1,3 +1,5 @@
+/// <reference path="./types/ofx-js.d.ts" />
+
 import { ITransaction, parse, TTransactionList } from "ofx-js";
 import { SaveTransaction } from "ynab";
 import { DateTime } from "luxon";
