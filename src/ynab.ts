@@ -91,6 +91,6 @@ export async function ofxToSaveTransactions(
 }
 
 export const isFuture = (t: SaveTransaction) =>
-  DateTime.local() < DateTime.fromISO(t.date);
+  DateTime.local().toUTC() < DateTime.fromISO(t.date).startOf("day");
 export const filterFuture = (t: SaveTransaction[]) =>
   t.filter(t => !isFuture(t));
