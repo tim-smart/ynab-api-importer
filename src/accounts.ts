@@ -49,9 +49,18 @@ export const sync = (ynab: API) => (ynabBudgetID: string) => (
     RxOp.filter(t => !!t.length),
 
     RxOp.flatMap(transactions =>
-      ynab.transactions.createTransactions(ynabBudgetID, {
-        transactions,
-      }),
+      ynab.transactions
+        .createTransactions(ynabBudgetID, {
+          transactions,
+        })
+        .then(
+          r => {
+            logger.debug(r);
+          },
+          err => {
+            logger.info("ERROR", err);
+          },
+        ),
     ),
 
     RxOp.tap(() => logger.info("Transactions imported")),
