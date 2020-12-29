@@ -76,7 +76,7 @@ const convertTransactions = (ynabAccountID: string) => (
   const importID = Ynab.importID();
 
   const convert = (t: Transaction): SaveTransaction => {
-    const date = DateTime.fromISO(t.timestamp);
+    const date = DateTime.fromISO(t.timestamp, { zone: "Pacific/Auckland" });
     const amount = Ynab.amountFromString(t.value.amount);
     const import_id = importID(date, amount);
     const memo = memoFromTransaction(t);
