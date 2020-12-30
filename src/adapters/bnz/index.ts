@@ -14,6 +14,13 @@ const login = (page: Page) => async (
   await page.type("input#field-principal", accessNumber);
   await page.type("input#field-credentials", password);
   await page.keyboard.press("Enter");
+
+  const el = await Promise.race([
+    page.waitForSelector("span.js-main-menu-button-text"),
+    page.waitForSelector("input[title=Accept]"),
+  ]);
+
+  await el.click();
   await page.waitForSelector("span.js-main-menu-button-text");
 };
 
