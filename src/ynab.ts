@@ -5,7 +5,6 @@ import { SaveTransaction } from "ynab";
 import { DateTime } from "luxon";
 import * as O from "fp-ts/Option";
 import * as F from "fp-ts/function";
-import logger from "./logger";
 
 const padDecimals = (input: string): string =>
   input.length < 2 ? padDecimals(input + "0") : input;
@@ -90,21 +89,3 @@ export async function ofxToSaveTransactions(
     },
   );
 }
-
-export const isFuture = (t: SaveTransaction) =>
-  DateTime.local().toUTC() < DateTime.fromISO(t.date).startOf("day");
-export const filterFuture = (t: SaveTransaction[]) =>
-  t.filter(t => {
-    if (isFuture(t)) {
-      logger.info(
-        "Ignore future transaction",
-        DateTime.local()
-          .toUTC()
-          .toISO(),
-        DateTime.fromISO(t.date).startOf("day"),
-      );
-      return false;
-    }
-
-    return true;
-  });

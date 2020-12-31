@@ -5,7 +5,7 @@ import * as RxOp from "rxjs/operators";
 import { API, SaveTransaction } from "ynab";
 import { TBankMap } from "./banks";
 import logger from "./logger";
-import * as Ynab from "./ynab";
+// import * as Ynab from "./ynab";
 
 export interface IAccount {
   /** Which bank settings to use */
@@ -43,7 +43,6 @@ export const sync = (ynab: API) => (ynabBudgetID: string) => (
         return r;
       }),
     ),
-    RxOp.map(Ynab.filterFuture),
 
     RxOp.reduce((acc, t) => acc.concat(t), [] as SaveTransaction[]),
     RxOp.filter(t => !!t.length),

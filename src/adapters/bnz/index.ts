@@ -61,6 +61,12 @@ const filterPendingInternational = (t: Transaction[]) =>
   t.filter(t => !isPendingInternational(t));
 const filterPending = (t: Transaction[]) => t.filter(t => !isPending(t));
 
+const dateTime = (timestamp: string) =>
+  DateTime.fromISO(timestamp, { zone: "Pacific/Auckland" });
+const isFuture = (t: Transaction) => dateTime(t.timestamp) > DateTime.local();
+const filterFuture = (transactions: Transaction[]) =>
+  transactions.filter(t => !isFuture(t));
+
 const memoFromTransaction = ({
   thisAccount: { details },
 }: Transaction): string =>
@@ -83,7 +89,7 @@ const convertTransactions = (ynabAccountID: string) => (
   const importID = Ynab.importID();
 
   const convert = (t: Transaction): SaveTransaction => {
-    const date = DateTime.fromISO(t.timestamp, { zone: "Pacific/Auckland" });
+    const date = dateTime(t.timestamp);
     const amount = Ynab.amountFromString(t.value.amount);
     const import_id = importID(date, amount);
     const memo = memoFromTransaction(t);
@@ -112,6 +118,7 @@ const ynabTransactions = (page: Page) => (accounts: IBnzAccountList) => (
       account =>
         listTransactions(page)(account.id)
           .then(r => r.transactions)
+          .then(filterFuture)
           .then(includePending ? filterPendingInternational : filterPending)
           .then(convertTransactions(ynabAccountID)),
     ),
