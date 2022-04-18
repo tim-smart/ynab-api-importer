@@ -20,7 +20,9 @@ const login = (page: Page) => async (
     page.waitForSelector("input[title=Accept]"),
   ]);
 
-  await el.click();
+  if (el) {
+    await el.click();
+  }
   await page.waitForSelector("span.js-main-menu-button-text");
 };
 
