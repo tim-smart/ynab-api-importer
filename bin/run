@@ -9,7 +9,7 @@ if (dev) {
   require("ts-node").register({ project });
 }
 
-const importer = require(`../${dev ? "src" : "lib"}`).default;
+const importer = require(`../${dev ? "src" : "dist"}`).default;
 const config = require(path.resolve(process.argv[2]));
 
 importer(config).catch(err => {

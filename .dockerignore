@@ -1,0 +1,10 @@
+Dockerfile
+node_modules/
+
+.history/
+.vscode/
+node_modules/
+config.js
+.DS_Store
+dist/
+.git/
