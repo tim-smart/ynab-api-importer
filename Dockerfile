@@ -33,6 +33,7 @@ RUN yarn build
 FROM node:16-alpine
 
 WORKDIR /app
+ENV NODE_ENV=production
 
 RUN apk add --no-cache \
   chromium \
