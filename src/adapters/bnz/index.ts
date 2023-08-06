@@ -9,21 +9,30 @@ import { IBnzAccountList, Transaction, TransactionsResponse } from "./types";
 const login = (page: Page) => async (
   accessNumber: string,
   password: string,
+  retries = 0,
 ) => {
+  await page.setBypassCSP(true);
   await page.goto("https://secure.bnz.co.nz/auth/personal-login");
   await page.type("input#field-principal", accessNumber);
   await page.type("input#field-credentials", password);
-  await page.keyboard.press("Enter");
+  await page.click("button[type=submit]");
 
-  const el = await Promise.race([
-    page.waitForSelector("span.js-main-menu-button-text"),
-    page.waitForSelector("input[title=Accept]"),
-  ]);
+  try {
+    const el = await Promise.race([
+      page.waitForSelector("span.js-main-menu-button-text"),
+      page.waitForSelector("input[title=Accept]"),
+    ]);
 
-  if (el) {
-    await el.click();
+    if (el) {
+      await el.click();
+    }
+    await page.waitForSelector("span.js-main-menu-button-text");
+  } catch (e) {
+    if (retries > 3) {
+      throw e;
+    }
+    await login(page)(accessNumber, password, retries + 1);
   }
-  await page.waitForSelector("span.js-main-menu-button-text");
 };
 
 const request = (page: Page) => <T>(
