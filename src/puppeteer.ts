@@ -10,7 +10,7 @@ export const setupPage = () =>
             args: ["--disable-dev-shm-usage", "--no-sandbox"],
           }
         : {
-            headless: "new",
+            headless: false,
           },
     )
     .then(browser =>
