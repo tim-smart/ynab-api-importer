@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.25](https://github.com/tim-smart/ynab-api-importer/compare/ynab-api-importer@3.0.24...ynab-api-importer@3.0.25) (2023-08-07)
+
+**Note:** Version bump only for package ynab-api-importer
+
+
+
+
+
 ## [3.0.24](https://github.com/tim-smart/ynab-api-importer/compare/ynab-api-importer@3.0.23...ynab-api-importer@3.0.24) (2023-08-07)
 
 **Note:** Version bump only for package ynab-api-importer
